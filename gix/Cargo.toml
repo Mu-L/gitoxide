@@ -208,7 +208,7 @@ max-control = ["parallel", "pack-cache-lru-static", "pack-cache-lru-dynamic"]
 ## on some platforms.
 ## Note that this configuration still uses a pure Rust zlib implementation which isn't the fastest compared to its C-alternatives.
 ## No C toolchain is involved.
-max-performance-safe = ["max-control", "parallel-walkdir"]
+max-performance-safe = ["max-control"]
 
 ## If set, walkdir iterators will be multi-threaded which affects the listing of loose objects and references.
 ## Note, however, that this will use `rayon` under the hood and spawn threads for each traversal to avoid a global rayon thread pool.
@@ -306,7 +306,7 @@ gix-tempfile = { version = "^14.0.0", path = "../gix-tempfile", default-features
 gix-lock = { version = "^14.0.0", path = "../gix-lock" }
 gix-validate = { version = "^0.8.5", path = "../gix-validate" }
 gix-sec = { version = "^0.10.7", path = "../gix-sec" }
-gix-date = { version = "^0.8.7", path = "../gix-date" }
+gix-date = { version = "^0.9.0", path = "../gix-date" }
 gix-refspec = { version = "^0.23.1", path = "../gix-refspec" }
 gix-filter = { version = "^0.11.3", path = "../gix-filter", optional = true }
 gix-dir = { version = "^0.6.0", path = "../gix-dir", optional = true }
@@ -335,7 +335,7 @@ gix-features = { version = "^0.38.2", path = "../gix-features", features = [
 gix-trace = { version = "^0.1.9", path = "../gix-trace" }
 
 gix-glob = { version = "^0.16.4", path = "../gix-glob" }
-gix-credentials = { version = "^0.24.3", path = "../gix-credentials", optional = true }
+gix-credentials = { version = "^0.24.4", path = "../gix-credentials", optional = true }
 gix-prompt = { version = "^0.8.6", path = "../gix-prompt", optional = true }
 gix-index = { version = "^0.33.1", path = "../gix-index", optional = true }
 gix-attributes = { version = "^0.22.3", path = "../gix-attributes", optional = true }

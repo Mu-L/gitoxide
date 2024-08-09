@@ -67,6 +67,15 @@ fn raw() {
         },
     );
 
+    assert_eq!(
+        gix_date::parse("1112911993 +0100", None).unwrap(),
+        Time {
+            seconds: 1112911993,
+            offset: 3600,
+            sign: Sign::Plus,
+        },
+    );
+
     let expected = Time {
         seconds: 1660874655,
         offset: -28800,
@@ -146,7 +155,7 @@ mod relative {
     use std::time::SystemTime;
 
     use gix_date::time::Sign;
-    use time::{Duration, OffsetDateTime};
+    use jiff::{ToSpan, Zoned};
 
     #[test]
     fn large_offsets() {
@@ -173,12 +182,19 @@ mod relative {
         let two_weeks_ago = gix_date::parse("2 weeks ago", Some(now)).unwrap();
         assert_eq!(Sign::Plus, two_weeks_ago.sign);
         assert_eq!(0, two_weeks_ago.offset);
-        let expected = OffsetDateTime::from(now).saturating_sub(Duration::weeks(2));
-        // account for the loss of precision when creating `Time` with seconds
-        let expected = expected.replace_nanosecond(0).unwrap();
+        let expected = Zoned::try_from(now)
+            .unwrap()
+            // account for the loss of precision when creating `Time` with seconds
+            .round(
+                jiff::ZonedRound::new()
+                    .smallest(jiff::Unit::Second)
+                    .mode(jiff::RoundMode::Trunc),
+            )
+            .unwrap()
+            .saturating_sub(2.weeks());
         assert_eq!(
-            OffsetDateTime::from_unix_timestamp(two_weeks_ago.seconds).unwrap(),
-            expected,
+            jiff::Timestamp::from_second(two_weeks_ago.seconds).unwrap(),
+            expected.timestamp(),
             "relative times differ"
         );
     }
@@ -188,7 +204,7 @@ mod relative {
 mod fuzz {
     #[test]
     fn invalid_but_does_not_cause_panic() {
-        for input in ["7	-𬞋", "5 ڜ-09", "-4 week ago Z", "8960609 day ago"] {
+        for input in ["-9999-1-1", "7	-𬞋", "5 ڜ-09", "-4 week ago Z", "8960609 day ago"] {
             let _ = gix_date::parse(input, Some(std::time::UNIX_EPOCH)).unwrap_err();
         }
     }

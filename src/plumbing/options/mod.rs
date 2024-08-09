@@ -138,6 +138,7 @@ pub enum Subcommands {
     Config(config::Platform),
     #[cfg(feature = "gitoxide-core-tools-corpus")]
     Corpus(corpus::Platform),
+    Worktree(worktree::Platform),
     /// Subcommands that need no git repository to run.
     #[clap(subcommand)]
     Free(free::Subcommands),
@@ -264,6 +265,21 @@ pub mod status {
         /// The git path specifications to list attributes for, or unset to read from stdin one per line.
         #[clap(value_parser = CheckPathSpec)]
         pub pathspec: Vec<BString>,
+    }
+}
+
+pub mod worktree {
+    #[derive(Debug, clap::Parser)]
+    #[command(about = "Commands for handling worktrees")]
+    pub struct Platform {
+        #[clap(subcommand)]
+        pub cmd: SubCommands,
+    }
+
+    #[derive(Debug, clap::Subcommand)]
+    pub enum SubCommands {
+        /// List all worktrees, along with some accompanying information
+        List,
     }
 }
 
@@ -567,7 +583,7 @@ pub mod clean {
         /// Remove whole directories.
         #[arg(long, short = 'd')]
         pub directories: bool,
-        /// Remove nested repositories.
+        /// Remove nested repositories, even outside ignored directories.
         #[arg(long, short = 'r')]
         pub repositories: bool,
         /// Pathspec patterns are used to match the result of the dirwalk, not the dirwalk itself.
@@ -577,6 +593,9 @@ pub mod clean {
         #[arg(long, short = 'm')]
         pub pathspec_matches_result: bool,
         /// Enter ignored directories to skip repositories contained within.
+        ///
+        /// This identifies and avoids deleting separate repositories that are nested inside
+        /// ignored directories eligible for removal.
         #[arg(long)]
         pub skip_hidden_repositories: Option<FindRepository>,
         /// What kind of repositories to find inside of untracked directories.

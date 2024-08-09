@@ -32,7 +32,7 @@ default = ["max"]
 
 ## Everything, all at once.
 ##
-## As fast as possible, tracing, with TUI progress, progress line rendering with auto-configuration, all transports based on their most mature implementation (HTTP), all `ein` tools, CLI colors and local-time support, JSON output, regex support for rev-specs.
+## As fast as possible, tracing, with TUI progress, progress line rendering with autoconfiguration, all transports based on their most mature implementation (HTTP), all `ein` tools, CLI colors and local-time support, JSON output, regex support for rev-specs.
 ## Can be amended with the `http-client-curl-rustls` feature to avoid `openssl` as backend.
 max = ["max-control", "fast", "gitoxide-core-blocking-client", "http-client-curl"]
 
@@ -164,21 +164,19 @@ http-client-reqwest = ["gix/blocking-http-transport-reqwest-rust-tls"]
 ## Use async client networking.
 gitoxide-core-async-client = ["gitoxide-core/async-client", "futures-lite"]
 
-
 [dependencies]
 anyhow = "1.0.42"
 
-gitoxide-core = { version = "^0.39.0", path = "gitoxide-core" }
+gitoxide-core = { version = "^0.39.1", path = "gitoxide-core" }
 gix-features = { version = "^0.38.2", path = "gix-features" }
 gix = { version = "^0.64.0", path = "gix", default-features = false }
-time = "0.3.23"
 
 clap = { version = "4.1.1", features = ["derive", "cargo"] }
 clap_complete = "4.4.3"
 prodash = { workspace = true, optional = true }
 is-terminal = { version = "0.4.0", optional = true }
 env_logger = { version = "0.10.0", default-features = false }
-crosstermion = { version = "0.13.0", optional = true, default-features = false }
+crosstermion = { version = "0.14.0", optional = true, default-features = false }
 futures-lite = { workspace = true, optional = true }
 
 # for 'tracing'
@@ -208,17 +206,21 @@ sha1_smol = { opt-level = 3 }
 
 [profile.release]
 overflow-checks = false
-#lto = "fat"
-# this bloats files but assures destructors are called, important for tempfiles. One day I hope we
+lto = "thin"
+# This bloats files but assures destructors are called, important for tempfiles. One day I hope we
 # can wire up the 'abrt' signal handler so tempfiles will be removed in case of panics.
-panic = 'unwind'
-#codegen-units = 1
+panic = "unwind"
 incremental = false
-build-override = { opt-level = 0 }
 
-# It's not quite worth building dependencies with more optimizations yet. Let's keep it here for later.
-#[profile.dev.package."*"]
-#opt-level = 2
+# This profile is currently used in building releases for GitHub.
+# It may be removed at any time and should not otherwise be relied on.
+[profile.release-github]
+inherits = "release"
+overflow-checks = false
+panic = "unwind"
+lto = "fat"
+codegen-units = 1
+strip = "symbols"
 
 [workspace]
 members = [
@@ -300,11 +302,14 @@ members = [
 ]
 
 [workspace.dependencies]
-prodash = { version = "28.0.0", default-features = false }
+prodash = { version = "29.0.0", default-features = false }
 futures-lite = { version = "2.1.0", default-features = false, features = ["std"] }
 faster-hex = { version = "0.9.0", default-features = false }
 reqwest = { version = "0.12.0", default-features = false, features = ["charset", "http2", "macos-system-configuration"] } # all but the 'default-tls' feature
 curl = { version = "0.4" }
+winnow = { version = "0.6.0", features = ["simd"] }
+unicode-bom = "2.0.2"
+
 
 [package.metadata.docs.rs]
 features = ["document-features", "max"]

@@ -54,11 +54,6 @@ pub mod async_util {
 
 pub fn main() -> Result<()> {
     let args: Args = Args::parse_from(gix::env::args_os());
-    #[allow(unsafe_code)]
-    unsafe {
-        // SAFETY: we don't manipulate the environment from any thread
-        time::util::local_offset::set_soundness(time::util::local_offset::Soundness::Unsound);
-    }
     let thread_limit = args.threads;
     let verbose = args.verbose;
     let format = args.format;
@@ -146,6 +141,17 @@ pub fn main() -> Result<()> {
     }
 
     match cmd {
+        Subcommands::Worktree(crate::plumbing::options::worktree::Platform { cmd }) => match cmd {
+            crate::plumbing::options::worktree::SubCommands::List => prepare_and_run(
+                "worktree-list",
+                trace,
+                verbose,
+                progress,
+                progress_keep_open,
+                None,
+                move |_progress, out, _err| core::repository::worktree::list(repository(Mode::Lenient)?, out, format),
+            ),
+        },
         Subcommands::IsClean | Subcommands::IsChanged => {
             let mode = if matches!(cmd, Subcommands::IsClean) {
                 core::repository::dirty::Mode::IsClean
